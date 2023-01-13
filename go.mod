@@ -1,4 +1,4 @@
-module github.com/migmartri/simple-todo
+module github.com/chainloop-dev/integration-demo
 
 go 1.19
 

@@ -53,4 +53,4 @@ jobs:
           artifact-name: sbom.cyclonedx.json
           output-file: /tmp/sbom.cyclonedx.json
         env:
-          IMAGE: ghcr.io/migmartri/simple-todo:${{ github.ref_name }}
+          IMAGE: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
