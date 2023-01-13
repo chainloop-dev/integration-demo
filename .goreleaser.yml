@@ -1,4 +1,4 @@
-project_name: todo-app
+project_name: integration-demo
 env:
   - CGO_ENABLED=0
 
@@ -30,4 +30,4 @@ dockers:
     ids:
       - server
     image_templates:
-      - "ghcr.io/migmartri/simple-todo:{{ .Tag }}"
+      - "ghcr.io/chainloop-dev/integration-demo:{{ .Tag }}"

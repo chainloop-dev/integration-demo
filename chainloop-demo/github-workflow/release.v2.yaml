@@ -62,10 +62,10 @@ jobs:
           artifact-name: sbom.cyclonedx.json
           output-file: /tmp/sbom.cyclonedx.json
         env:
-          IMAGE: ghcr.io/migmartri/simple-todo:${{ github.ref_name }}
+          IMAGE: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
 
       - name: Add Container Image Artifact
-        run: chainloop attestation add --name image --value ghcr.io/migmartri/simple-todo:${{ github.ref_name }}
+        run: chainloop attestation add --name image --value ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
 
       - name: Add SBOM Artifact
         run: chainloop attestation add --name sbom --value /tmp/sbom.cyclonedx.json
