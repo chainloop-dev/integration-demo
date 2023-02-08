@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize Attestation
-        run: chainloop attestation init --contract-revision 2
+        run: chainloop attestation init # --contract-revision 2
 
       - name: Set up Go
         uses: actions/setup-go@v3
