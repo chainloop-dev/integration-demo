@@ -19,7 +19,7 @@ jobs:
 
       - name: Install Chainloop
         run: |
-          curl -sfL https://chainloop.dev/install.sh | bash -s -- --version v${{ env.CHAINLOOP_VERSION }}
+          curl -sfL https://docs.chainloop.dev/install.sh | bash -s -- --version v${{ env.CHAINLOOP_VERSION }}
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -81,5 +81,5 @@ jobs:
         run: |
           chainloop attestation reset --trigger cancellation
     env:
-      CHAINLOOP_VERSION: 0.8.70
+      CHAINLOOP_VERSION: 0.8.92
       CHAINLOOP_ROBOT_ACCOUNT: ${{ secrets.CHAINLOOP_ROBOT_ACCOUNT }}
