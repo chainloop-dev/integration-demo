@@ -15,7 +15,9 @@ jobs:
       contents: write # required for goreleaser
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v2.5.0
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v2.0.2'
 
       - name: Install Chainloop
         run: |
@@ -93,5 +95,5 @@ jobs:
         run: |
           chainloop attestation reset --trigger cancellation
     env:
-      CHAINLOOP_VERSION: 0.8.92
+      CHAINLOOP_VERSION: 0.9.1
       CHAINLOOP_ROBOT_ACCOUNT: ${{ secrets.CHAINLOOP_ROBOT_ACCOUNT }}

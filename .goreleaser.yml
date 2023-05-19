@@ -16,13 +16,14 @@ signs:
         "sign-blob",
         "--key=env://COSIGN_PRIVATE_KEY",
         "--output-signature=${signature}",
+        "--yes",
         "${artifact}",
       ]
     artifacts: all
 
 docker_signs:
   - cmd: cosign
-    args: ["sign", "--key=env://COSIGN_PRIVATE_KEY", "${artifact}"]
+    args: ["sign", "--yes", "--key=env://COSIGN_PRIVATE_KEY", "${artifact}"]
     artifacts: all
 
 dockers:
