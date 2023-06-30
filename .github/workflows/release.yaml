@@ -64,11 +64,23 @@ jobs:
         env:
           IMAGE: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
 
+      - uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.IMAGE }}
+          format: spdx-json
+          artifact-name: sbom.spdx.json
+          output-file: /tmp/sbom.spdx.json
+        env:
+          IMAGE: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
+
       - name: Add Container Image Artifact
         run: chainloop attestation add --name image --value ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
 
-      - name: Add SBOM Artifact
+      - name: Add CycloneDX SBOM Artifact
         run: chainloop attestation add --name sbom --value /tmp/sbom.cyclonedx.json
+
+      - name: Add SPDX SBOM Artifact
+        run: chainloop attestation add --name sbom --value /tmp/sbom.spdx.json
 
       - name: Add Binary Artifact
         run: |
