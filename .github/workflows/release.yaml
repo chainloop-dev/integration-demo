@@ -80,7 +80,7 @@ jobs:
         run: chainloop attestation add --name sbom --value /tmp/sbom.cyclonedx.json
 
       - name: Add SPDX SBOM Artifact
-        run: chainloop attestation add --name sbom --value /tmp/sbom.spdx.json
+        run: chainloop attestation add --name sbom-spdx --value /tmp/sbom.spdx.json
 
       - name: Add Binary Artifact
         run: |
