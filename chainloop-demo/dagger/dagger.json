@@ -19,5 +19,6 @@
       "source": "github.com/shykes/daggerverse/wolfi@f678bfe29024559abec0ac77fbbd558bc8402cdf"
     }
   ],
+  "source": ".",
   "engineVersion": "v0.9.10"
 }
