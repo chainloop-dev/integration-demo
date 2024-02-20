@@ -3,8 +3,16 @@
   "sdk": "go",
   "dependencies": [
     {
+      "name": "wolfi",
+      "source": "github.com/shykes/daggerverse/wolfi@f678bfe29024559abec0ac77fbbd558bc8402cdf"
+    },
+    {
       "name": "golang",
       "source": "github.com/kpenfound/dagger-modules/golang@5cb802660efb1242e5d7beb382f772f0a3f34616"
+    },
+    {
+      "name": "syft",
+      "source": "github.com/fluent-ci-templates/syft-pipeline@5cfd62b6070ff68731875fe7aacdbfd7910e5a95"
     }
   ],
   "source": "build-and-release",

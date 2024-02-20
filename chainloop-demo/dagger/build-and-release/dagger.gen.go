@@ -213,6 +213,9 @@ type ServiceID string
 // The `SocketID` scalar type represents an identifier for an object of type Socket.
 type SocketID string
 
+// The `SyftID` scalar type represents an identifier for an object of type Syft.
+type SyftID string
+
 // The `TerminalID` scalar type represents an identifier for an object of type Terminal.
 type TerminalID string
 
@@ -223,6 +226,9 @@ type TypeDefID string
 //
 // A Null Void is used as a placeholder for resolvers that do not return anything.
 type Void string
+
+// The `WolfiID` scalar type represents an identifier for an object of type Wolfi.
+type WolfiID string
 
 // Key value object that represents a build argument.
 type BuildArg struct {
@@ -5951,6 +5957,17 @@ func (r *Client) LoadSocketFromID(id SocketID) *Socket {
 	}
 }
 
+// Load a Syft from its ID.
+func (r *Client) LoadSyftFromID(id SyftID) *Syft {
+	q := r.q.Select("loadSyftFromID")
+	q = q.Arg("id", id)
+
+	return &Syft{
+		q: q,
+		c: r.c,
+	}
+}
+
 // Load a Terminal from its ID.
 func (r *Client) LoadTerminalFromID(id TerminalID) *Terminal {
 	q := r.q.Select("loadTerminalFromID")
@@ -5968,6 +5985,17 @@ func (r *Client) LoadTypeDefFromID(id TypeDefID) *TypeDef {
 	q = q.Arg("id", id)
 
 	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a Wolfi from its ID.
+func (r *Client) LoadWolfiFromID(id WolfiID) *Wolfi {
+	q := r.q.Select("loadWolfiFromID")
+	q = q.Arg("id", id)
+
+	return &Wolfi{
 		q: q,
 		c: r.c,
 	}
@@ -6097,11 +6125,29 @@ func (r *Client) Socket(id SocketID) *Socket {
 	}
 }
 
+func (r *Client) Syft() *Syft {
+	q := r.q.Select("syft")
+
+	return &Syft{
+		q: q,
+		c: r.c,
+	}
+}
+
 // Create a new TypeDef.
 func (r *Client) TypeDef() *TypeDef {
 	q := r.q.Select("typeDef")
 
 	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+func (r *Client) Wolfi() *Wolfi {
+	q := r.q.Select("wolfi")
+
+	return &Wolfi{
 		q: q,
 		c: r.c,
 	}
@@ -6440,6 +6486,97 @@ func (r *Socket) UnmarshalJSON(bs []byte) error {
 	return nil
 }
 
+type Syft struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	id *SyftID
+}
+
+// A unique identifier for this Syft.
+func (r *Syft) ID(ctx context.Context) (SyftID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response SyftID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *Syft) XXX_GraphQLType() string {
+	return "Syft"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *Syft) XXX_GraphQLIDType() string {
+	return "SyftID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *Syft) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *Syft) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Syft) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadSyftFromID(SyftID(id))
+	return nil
+}
+
+// SyftSbomOpts contains options for Syft.Sbom
+type SyftSbomOpts struct {
+	//
+	// The image to run the job in
+	//
+	Image string
+	//
+	// The output format
+	//
+	Output string
+}
+
+// Generate a software bill of materials
+func (r *Syft) Sbom(src *Directory, outputFile string, opts ...SyftSbomOpts) *File {
+	assertNotNil("src", src)
+	q := r.q.Select("sbom")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `image` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Image) {
+			q = q.Arg("image", opts[i].Image)
+		}
+		// `output` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Output) {
+			q = q.Arg("output", opts[i].Output)
+		}
+	}
+	q = q.Arg("src", src)
+	q = q.Arg("outputFile", outputFile)
+
+	return &File{
+		q: q,
+		c: r.c,
+	}
+}
+
 // An interactive terminal that clients can connect to.
 type Terminal struct {
 	q *querybuilder.Selection
@@ -6773,6 +6910,97 @@ func (r *TypeDef) WithOptional(optional bool) *TypeDef {
 	}
 }
 
+// A Dagger Module to integrate with Wolfi Linux
+// https://wolfi.dev
+type Wolfi struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	id *WolfiID
+}
+
+// WolfiContainerOpts contains options for Wolfi.Container
+type WolfiContainerOpts struct {
+	//
+	// APK packages to install
+	//
+	Packages []string
+	//
+	// Overlay images to merge on top of the base.
+	// See https://twitter.com/ibuildthecloud/status/1721306361999597884
+	//
+	Overlays []*Container
+}
+
+// Build a Wolfi Linux container
+func (r *Wolfi) Container(opts ...WolfiContainerOpts) *Container {
+	q := r.q.Select("container")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `packages` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Packages) {
+			q = q.Arg("packages", opts[i].Packages)
+		}
+		// `overlays` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Overlays) {
+			q = q.Arg("overlays", opts[i].Overlays)
+		}
+	}
+
+	return &Container{
+		q: q,
+		c: r.c,
+	}
+}
+
+// A unique identifier for this Wolfi.
+func (r *Wolfi) ID(ctx context.Context) (WolfiID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response WolfiID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *Wolfi) XXX_GraphQLType() string {
+	return "Wolfi"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *Wolfi) XXX_GraphQLIDType() string {
+	return "WolfiID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *Wolfi) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *Wolfi) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Wolfi) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadWolfiFromID(WolfiID(id))
+	return nil
+}
+
 type CacheSharingMode string
 
 func (CacheSharingMode) IsEnum() {}
@@ -7026,7 +7254,7 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg proj", err))
 				}
 			}
-			return (*BuildAndRelease).Build(&parent, proj)
+			return (*BuildAndRelease).Build(&parent, ctx, proj)
 		default:
 			return nil, fmt.Errorf("unknown function %s", fnName)
 		}
@@ -7036,7 +7264,7 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 				dag.TypeDef().WithObject("BuildAndRelease").
 					WithFunction(
 						dag.Function("Build",
-							dag.TypeDef().WithObject("Directory")).
+							dag.TypeDef().WithObject("File")).
 							WithArg("proj", dag.TypeDef().WithObject("Directory")))), nil
 	default:
 		return nil, fmt.Errorf("unknown object %s", parentName)
