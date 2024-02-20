@@ -9,7 +9,7 @@ import (
 
 type BuildAndRelease struct{}
 
-// Build and Publish a go-application as a container image
+// Build and Publish a GO application as a container image
 // Attest the pieces of evidence to Chainloop
 func (m *BuildAndRelease) BuildAndPublish(ctx context.Context, proj *Directory, chainloopToken, chainloopSigningKey, chainloopPassphrase *Secret) (string, error) {
 	var err error
