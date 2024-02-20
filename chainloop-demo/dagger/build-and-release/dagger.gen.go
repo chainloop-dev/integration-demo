@@ -7171,7 +7171,7 @@ func (c errorWrappedClient) MakeRequest(ctx context.Context, req *graphql.Reques
 	return nil
 }
 
-func (r *BuildAndRelease) UnmarshalJSON(bs []byte) error {
+func (r *Demo) UnmarshalJSON(bs []byte) error {
 	var concrete struct{}
 	err := json.Unmarshal(bs, &concrete)
 	if err != nil {
@@ -7242,7 +7242,7 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 	case "BuildAndRelease":
 		switch fnName {
 		case "Build":
-			var parent BuildAndRelease
+			var parent Demo
 			err = json.Unmarshal(parentJSON, &parent)
 			if err != nil {
 				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
@@ -7254,7 +7254,7 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg proj", err))
 				}
 			}
-			return (*BuildAndRelease).Build(&parent, ctx, proj)
+			return (*Demo).Build(&parent, ctx, proj)
 		default:
 			return nil, fmt.Errorf("unknown function %s", fnName)
 		}

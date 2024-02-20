@@ -9,7 +9,7 @@ import (
 
 type BuildAndRelease struct{}
 
-func (m *BuildAndRelease) Build(ctx context.Context, proj *Directory) (string, error) {
+func (m *BuildAndRelease) BuildAndPublish(ctx context.Context, proj *Directory) (string, error) {
 	// Generate SBOM from the code
 	_ = dag.Syft().Sbom(proj, "sbom.json", SyftSbomOpts{Output: "cyclonedx-json"})
 
