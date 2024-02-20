@@ -1,0 +1,12 @@
+{
+  "name": "build-and-release",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "golang",
+      "source": "github.com/kpenfound/dagger-modules/golang@5cb802660efb1242e5d7beb382f772f0a3f34616"
+    }
+  ],
+  "source": "build-and-release",
+  "engineVersion": "v0.9.10"
+}
