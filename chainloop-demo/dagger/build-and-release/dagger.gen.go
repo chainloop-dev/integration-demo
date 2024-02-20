@@ -121,6 +121,9 @@ func (e *ExecError) Unwrap() error {
 // The `CacheVolumeID` scalar type represents an identifier for an object of type CacheVolume.
 type CacheVolumeID string
 
+// The `ChainloopID` scalar type represents an identifier for an object of type Chainloop.
+type ChainloopID string
+
 // The `ContainerID` scalar type represents an identifier for an object of type Container.
 type ContainerID string
 
@@ -315,6 +318,234 @@ func (r *CacheVolume) UnmarshalJSON(bs []byte) error {
 	}
 	*r = *dag.LoadCacheVolumeFromID(CacheVolumeID(id))
 	return nil
+}
+
+type Chainloop struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	attestationAdd    *string
+	attestationInit   *string
+	attestationPush   *string
+	attestationReset  *string
+	attestationStatus *string
+	id                *ChainloopID
+}
+
+// ChainloopAttestationAddOpts contains options for Chainloop.AttestationAdd
+type ChainloopAttestationAddOpts struct {
+	//
+	// path to the file to be added
+	//
+	Path *File
+	//
+	// raw value to be added
+	//
+	Value string
+	//
+	// Container Registry Credentials for Container image-based materials
+	// i.e docker.io, ghcr.io, etc
+	//
+	Registry string
+
+	RegistryUsername string
+
+	RegistryPassword *Secret
+}
+
+// Add a piece of evidence/material to the current attestation
+// The material value can be provided either in the form of a file or as a raw string
+// The file type is required for materials of kind ARTIFACT that are uploaded to the CAS
+func (r *Chainloop) AttestationAdd(ctx context.Context, attestationId string, name string, opts ...ChainloopAttestationAddOpts) (string, error) {
+	if r.attestationAdd != nil {
+		return *r.attestationAdd, nil
+	}
+	q := r.q.Select("attestationAdd")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `path` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Path) {
+			q = q.Arg("path", opts[i].Path)
+		}
+		// `value` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Value) {
+			q = q.Arg("value", opts[i].Value)
+		}
+		// `registry` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Registry) {
+			q = q.Arg("registry", opts[i].Registry)
+		}
+		// `registryUsername` optional argument
+		if !querybuilder.IsZeroValue(opts[i].RegistryUsername) {
+			q = q.Arg("registryUsername", opts[i].RegistryUsername)
+		}
+		// `registryPassword` optional argument
+		if !querybuilder.IsZeroValue(opts[i].RegistryPassword) {
+			q = q.Arg("registryPassword", opts[i].RegistryPassword)
+		}
+	}
+	q = q.Arg("attestationId", attestationId)
+	q = q.Arg("name", name)
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// ChainloopAttestationInitOpts contains options for Chainloop.AttestationInit
+type ChainloopAttestationInitOpts struct {
+	//
+	// Workflow Contract revision, default is the latest
+	//
+	ContractRevision string
+	//
+	// Path to the git repository to be attested
+	//
+	Repository *Directory
+}
+
+// Start the attestation crafting process
+func (r *Chainloop) AttestationInit(ctx context.Context, opts ...ChainloopAttestationInitOpts) (string, error) {
+	if r.attestationInit != nil {
+		return *r.attestationInit, nil
+	}
+	q := r.q.Select("attestationInit")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `contractRevision` optional argument
+		if !querybuilder.IsZeroValue(opts[i].ContractRevision) {
+			q = q.Arg("contractRevision", opts[i].ContractRevision)
+		}
+		// `repository` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Repository) {
+			q = q.Arg("repository", opts[i].Repository)
+		}
+	}
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Generate, sign and push the attestation to the control plane
+func (r *Chainloop) AttestationPush(ctx context.Context, attestationId string, signingKey *Secret, passphrase *Secret) (string, error) {
+	assertNotNil("signingKey", signingKey)
+	assertNotNil("passphrase", passphrase)
+	if r.attestationPush != nil {
+		return *r.attestationPush, nil
+	}
+	q := r.q.Select("attestationPush")
+	q = q.Arg("attestationId", attestationId)
+	q = q.Arg("signingKey", signingKey)
+	q = q.Arg("passphrase", passphrase)
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// ChainloopAttestationResetOpts contains options for Chainloop.AttestationReset
+type ChainloopAttestationResetOpts struct {
+	Trigger string
+
+	Reason string
+}
+
+// Mark current attestation process as canceled or failed. --trigger  "failure" | "cancellation" (default: "failure")
+func (r *Chainloop) AttestationReset(ctx context.Context, attestationId string, opts ...ChainloopAttestationResetOpts) (string, error) {
+	if r.attestationReset != nil {
+		return *r.attestationReset, nil
+	}
+	q := r.q.Select("attestationReset")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `trigger` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Trigger) {
+			q = q.Arg("trigger", opts[i].Trigger)
+		}
+		// `reason` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Reason) {
+			q = q.Arg("reason", opts[i].Reason)
+		}
+	}
+	q = q.Arg("attestationId", attestationId)
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Check the status of the current attestation
+func (r *Chainloop) AttestationStatus(ctx context.Context, attestationId string) (string, error) {
+	if r.attestationStatus != nil {
+		return *r.attestationStatus, nil
+	}
+	q := r.q.Select("attestationStatus")
+	q = q.Arg("attestationId", attestationId)
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// A unique identifier for this Chainloop.
+func (r *Chainloop) ID(ctx context.Context) (ChainloopID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response ChainloopID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *Chainloop) XXX_GraphQLType() string {
+	return "Chainloop"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *Chainloop) XXX_GraphQLIDType() string {
+	return "ChainloopID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *Chainloop) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *Chainloop) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Chainloop) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadChainloopFromID(ChainloopID(id))
+	return nil
+}
+
+func (r *Chainloop) Token() *Secret {
+	q := r.q.Select("token")
+
+	return &Secret{
+		q: q,
+		c: r.c,
+	}
 }
 
 // An OCI-compatible container, also known as a Docker container.
@@ -5383,6 +5614,17 @@ func (r *Client) CacheVolume(key string) *CacheVolume {
 	}
 }
 
+func (r *Client) Chainloop(token *Secret) *Chainloop {
+	assertNotNil("token", token)
+	q := r.q.Select("chainloop")
+	q = q.Arg("token", token)
+
+	return &Chainloop{
+		q: q,
+		c: r.c,
+	}
+}
+
 // Checks if the current Dagger Engine is compatible with an SDK's required version.
 func (r *Client) CheckVersionCompatibility(ctx context.Context, version string) (bool, error) {
 	q := r.q.Select("checkVersionCompatibility")
@@ -5644,6 +5886,17 @@ func (r *Client) LoadCacheVolumeFromID(id CacheVolumeID) *CacheVolume {
 	q = q.Arg("id", id)
 
 	return &CacheVolume{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a Chainloop from its ID.
+func (r *Client) LoadChainloopFromID(id ChainloopID) *Chainloop {
+	q := r.q.Select("loadChainloopFromID")
+	q = q.Arg("id", id)
+
+	return &Chainloop{
 		q: q,
 		c: r.c,
 	}
@@ -7171,7 +7424,7 @@ func (c errorWrappedClient) MakeRequest(ctx context.Context, req *graphql.Reques
 	return nil
 }
 
-func (r *Demo) UnmarshalJSON(bs []byte) error {
+func (r *BuildAndRelease) UnmarshalJSON(bs []byte) error {
 	var concrete struct{}
 	err := json.Unmarshal(bs, &concrete)
 	if err != nil {
@@ -7241,8 +7494,8 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 	switch parentName {
 	case "BuildAndRelease":
 		switch fnName {
-		case "Build":
-			var parent Demo
+		case "BuildAndPublish":
+			var parent BuildAndRelease
 			err = json.Unmarshal(parentJSON, &parent)
 			if err != nil {
 				panic(fmt.Errorf("%s: %w", "failed to unmarshal parent object", err))
@@ -7254,7 +7507,7 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 					panic(fmt.Errorf("%s: %w", "failed to unmarshal input arg proj", err))
 				}
 			}
-			return (*Demo).Build(&parent, ctx, proj)
+			return (*BuildAndRelease).BuildAndPublish(&parent, ctx, proj)
 		default:
 			return nil, fmt.Errorf("unknown function %s", fnName)
 		}
@@ -7263,8 +7516,8 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 			WithObject(
 				dag.TypeDef().WithObject("BuildAndRelease").
 					WithFunction(
-						dag.Function("Build",
-							dag.TypeDef().WithObject("File")).
+						dag.Function("BuildAndPublish",
+							dag.TypeDef().WithKind(StringKind)).
 							WithArg("proj", dag.TypeDef().WithObject("Directory")))), nil
 	default:
 		return nil, fmt.Errorf("unknown object %s", parentName)

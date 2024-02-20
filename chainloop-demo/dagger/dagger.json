@@ -3,8 +3,8 @@
   "sdk": "go",
   "dependencies": [
     {
-      "name": "wolfi",
-      "source": "github.com/shykes/daggerverse/wolfi@f678bfe29024559abec0ac77fbbd558bc8402cdf"
+      "name": "chainloop",
+      "source": "github.com/chainloop-dev/chainloop/extras/dagger@ae2e814ef5f33b2098371349235a2f387217af2f"
     },
     {
       "name": "golang",
@@ -13,6 +13,10 @@
     {
       "name": "syft",
       "source": "github.com/fluent-ci-templates/syft-pipeline@5cfd62b6070ff68731875fe7aacdbfd7910e5a95"
+    },
+    {
+      "name": "wolfi",
+      "source": "github.com/shykes/daggerverse/wolfi@f678bfe29024559abec0ac77fbbd558bc8402cdf"
     }
   ],
   "source": "build-and-release",
