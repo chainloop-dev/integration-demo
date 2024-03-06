@@ -24,12 +24,6 @@ jobs:
       - name: Build and Publish
         run: |
           dagger call -m github.com/chainloop-dev/integration-demo/chainloop-demo/dagger build-and-publish \
-            --proj . \
-            --chainloop-token env:CHAINLOOP_TOKEN \
-            --chainloop-signing-key env:CHAINLOOP_SIGNING_KEY \
-            --chainloop-passphrase env:CHAINLOOP_SIGNING_PASSWORD
+            --proj .
     env:
-      CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_ROBOT_ACCOUNT }}
       DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-      CHAINLOOP_SIGNING_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-      CHAINLOOP_SIGNING_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
