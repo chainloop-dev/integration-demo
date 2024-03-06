@@ -4,7 +4,7 @@
   "dependencies": [
     {
       "name": "chainloop",
-      "source": "github.com/chainloop-dev/chainloop/extras/dagger@ae2e814ef5f33b2098371349235a2f387217af2f"
+      "source": "github.com/chainloop-dev/chainloop/extras/dagger@00d64321852ace5804ff3cbf1e478acd0cf91460"
     },
     {
       "name": "golang",
@@ -20,5 +20,5 @@
     }
   ],
   "source": "src",
-  "engineVersion": "v0.9.10"
+  "engineVersion": "v0.10.1"
 }
