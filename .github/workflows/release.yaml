@@ -1,15 +1,16 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  pull_request:
+  # push:
+  #   tags:
+  #     - "v*.*.*"
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.ref_type == 'tag'
+    # if: github.ref_type == 'tag'
     permissions:
       packages: write
       contents: write # required for goreleaser
@@ -19,17 +20,17 @@ jobs:
         with:
           cosign-release: 'v2.2.3'
 
-      - name: Install Chainloop
-        run: |
-          curl -sfL https://docs.chainloop.dev/install.sh | bash -s -- --version v${{ env.CHAINLOOP_VERSION }}
+      # - name: Install Chainloop
+      #   run: |
+      #     curl -sfL https://docs.chainloop.dev/install.sh | bash -s -- --version v${{ env.CHAINLOOP_VERSION }}
 
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
 
-      - name: Initialize Attestation
-        run: chainloop attestation init # --contract-revision 2
+      # - name: Initialize Attestation
+      #   run: chainloop attestation init # --contract-revision 2
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -54,58 +55,59 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          GORELEASER_CURRENT_TAG: v1.0.0
 
-      - uses: anchore/sbom-action@v0
-        with:
-          image: ${{ env.IMAGE }}
-          format: cyclonedx-json
-          artifact-name: sbom.cyclonedx.json
-          output-file: /tmp/sbom.cyclonedx.json
-        env:
-          IMAGE: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
+      # - uses: anchore/sbom-action@v0
+      #   with:
+      #     image: ${{ env.IMAGE }}
+      #     format: cyclonedx-json
+      #     artifact-name: sbom.cyclonedx.json
+      #     output-file: /tmp/sbom.cyclonedx.json
+      #   env:
+      #     IMAGE: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
 
-      - uses: anchore/sbom-action@v0
-        with:
-          image: ${{ env.IMAGE }}
-          format: spdx-json
-          artifact-name: sbom.spdx.json
-          output-file: /tmp/sbom.spdx.json
-        env:
-          IMAGE: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
+      # - uses: anchore/sbom-action@v0
+      #   with:
+      #     image: ${{ env.IMAGE }}
+      #     format: spdx-json
+      #     artifact-name: sbom.spdx.json
+      #     output-file: /tmp/sbom.spdx.json
+      #   env:
+      #     IMAGE: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
 
-      - name: Add Container Image Artifact
-        run: chainloop attestation add --name image --value ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
+      # - name: Add Container Image Artifact
+      #   run: chainloop attestation add --name image --value ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
 
-      - name: Add CycloneDX SBOM Artifact
-        run: chainloop attestation add --name sbom --value /tmp/sbom.cyclonedx.json
+      # - name: Add CycloneDX SBOM Artifact
+      #   run: chainloop attestation add --name sbom --value /tmp/sbom.cyclonedx.json
 
-      - name: Add SPDX SBOM Artifact
-        run: chainloop attestation add --name sbom-spdx --value /tmp/sbom.spdx.json
+      # - name: Add SPDX SBOM Artifact
+      #   run: chainloop attestation add --name sbom-spdx --value /tmp/sbom.spdx.json
 
-      - name: Add Binary Artifact
-        run: |
-          BINARY_PATH="$(echo -n '${{ steps.release.outputs.metadata }}' | jq -r '"dist/" + .project_name + "_" + .version + "_" + .runtime.goos + "_" + .runtime.goarch + ".tar.gz"')"
+      # - name: Add Binary Artifact
+      #   run: |
+      #     BINARY_PATH="$(echo -n '${{ steps.release.outputs.metadata }}' | jq -r '"dist/" + .project_name + "_" + .version + "_" + .runtime.goos + "_" + .runtime.goarch + ".tar.gz"')"
 
-          chainloop attestation add --name binary --value ${BINARY_PATH}
+      #     chainloop attestation add --name binary --value ${BINARY_PATH}
 
-      - name: Finish and Record Attestation
-        if: ${{ success() }}
-        run: |
-          chainloop attestation status --full
-          chainloop attestation push --key env://CHAINLOOP_SIGNING_KEY
-        env:
-          CHAINLOOP_SIGNING_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-          CHAINLOOP_SIGNING_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      # - name: Finish and Record Attestation
+      #   if: ${{ success() }}
+      #   run: |
+      #     chainloop attestation status --full
+      #     chainloop attestation push --key env://CHAINLOOP_SIGNING_KEY
+      #   env:
+      #     CHAINLOOP_SIGNING_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      #     CHAINLOOP_SIGNING_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
 
-      - name: Mark attestation as failed
-        if: ${{ failure() }}
-        run: |
-          chainloop attestation reset
+      # - name: Mark attestation as failed
+      #   if: ${{ failure() }}
+      #   run: |
+      #     chainloop attestation reset
 
-      - name: Mark attestation as cancelled
-        if: ${{ cancelled() }}
-        run: |
-          chainloop attestation reset --trigger cancellation
+      # - name: Mark attestation as cancelled
+      #   if: ${{ cancelled() }}
+      #   run: |
+      #     chainloop attestation reset --trigger cancellation
     env:
       CHAINLOOP_VERSION: 0.89.0
       CHAINLOOP_ROBOT_ACCOUNT: ${{ secrets.CHAINLOOP_ROBOT_ACCOUNT }}
