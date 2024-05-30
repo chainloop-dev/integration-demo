@@ -10,7 +10,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.ref_type == 'tag'
+    # if: github.ref_type == 'tag'
     permissions:
       packages: write
       contents: write # required for goreleaser
