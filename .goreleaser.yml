@@ -38,3 +38,4 @@ dockers:
       - "ghcr.io/chainloop-dev/integration-demo:{{ .Tag }}"
 
 release:
+  include_meta: true
