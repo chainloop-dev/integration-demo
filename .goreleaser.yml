@@ -12,29 +12,29 @@ archives:
   - builds:
     - server
 
-# signs:
-#   # COSIGN_PASSWORD is also required to be present
-#   - cmd: cosign
-#     args:
-#       [
-#         "sign-blob",
-#         "--key=env://COSIGN_PRIVATE_KEY",
-#         "--output-signature=${signature}",
-#         "--yes",
-#         "${artifact}",
-#       ]
-#     artifacts: all
+signs:
+  # COSIGN_PASSWORD is also required to be present
+  - cmd: cosign
+    args:
+      [
+        "sign-blob",
+        "--key=env://COSIGN_PRIVATE_KEY",
+        "--output-signature=${signature}",
+        "--yes",
+        "${artifact}",
+      ]
+    artifacts: all
 
-# docker_signs:
-#   - cmd: cosign
-#     args: ["sign", "--yes", "--key=env://COSIGN_PRIVATE_KEY", "${artifact}"]
-#     artifacts: all
+docker_signs:
+  - cmd: cosign
+    args: ["sign", "--yes", "--key=env://COSIGN_PRIVATE_KEY", "${artifact}"]
+    artifacts: all
 
-# dockers:
-#   - dockerfile: Dockerfile.goreleaser
-#     ids:
-#       - server
-#     image_templates:
-#       - "ghcr.io/chainloop-dev/integration-demo:{{ .Tag }}"
+dockers:
+  - dockerfile: Dockerfile.goreleaser
+    ids:
+      - server
+    image_templates:
+      - "ghcr.io/chainloop-dev/integration-demo:{{ .Tag }}"
 
 release:

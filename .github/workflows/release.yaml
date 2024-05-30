@@ -15,10 +15,10 @@ jobs:
       packages: write
       contents: write # required for goreleaser
     steps:
-      # - name: Install Cosign
-      #   uses: sigstore/cosign-installer@main
-      #   with:
-      #     cosign-release: 'v2.2.3'
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v2.2.3'
 
       # - name: Install Chainloop
       #   run: |
