@@ -17,5 +17,5 @@ jobs:
       additional_materials: "ghcr.io/chainloop-dev/chainloop/control-plane:${{ github.ref_name }},ghcr.io/chainloop-dev/chainloop/artifact-cas:${{ github.ref_name }},ghcr.io/chainloop-dev/chainloop/cli:${{ github.ref_name }}"
     secrets:
       api_token: ${{ secrets.CHAINLOOP_API_TOKEN }}
-      cosign_key: ${{ secrets.COSIGN_KEY }}
+      cosign_key: ${{ secrets.COSIGN_PRIVATE_KEY }}
       cosign_password: ${{ secrets.COSIGN_PASSWORD }}
