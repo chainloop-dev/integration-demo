@@ -24,10 +24,10 @@ jobs:
       #   run: |
       #     curl -sfL https://docs.chainloop.dev/install.sh | bash -s -- --version v${{ env.CHAINLOOP_VERSION }}
 
-      # - name: Checkout
-      #   uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      #   with:
-      #     fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
 
       # - name: Initialize Attestation
       #   run: chainloop attestation init # --contract-revision 2
