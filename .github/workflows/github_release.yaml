@@ -1,0 +1,21 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Attest GitHub Release
+    uses: chainloop-dev/labs/.github/workflows/chainloop_github_release.yml@417bad33ca08beaa785ae6a6b933406cd7b935cb
+    with:
+      project: "chainloop"
+      workflow_name: "chainloop-vault-release"
+      additional_materials: "ghcr.io/chainloop-dev/chainloop/control-plane:${{ github.ref_name }},ghcr.io/chainloop-dev/chainloop/artifact-cas:${{ github.ref_name }},ghcr.io/chainloop-dev/chainloop/cli:${{ github.ref_name }}"
+    secrets:
+      api_token: ${{ secrets.CHAINLOOP_API_TOKEN }}
+      cosign_key: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      cosign_password: ${{ secrets.COSIGN_PASSWORD }}
