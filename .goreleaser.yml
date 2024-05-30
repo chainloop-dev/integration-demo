@@ -8,6 +8,10 @@ builds:
     targets:
       - linux_amd64
 
+archives:
+  - builds:
+    - server
+
 # signs:
 #   # COSIGN_PASSWORD is also required to be present
 #   - cmd: cosign
@@ -32,3 +36,5 @@ builds:
 #       - server
 #     image_templates:
 #       - "ghcr.io/chainloop-dev/integration-demo:{{ .Tag }}"
+
+release:
