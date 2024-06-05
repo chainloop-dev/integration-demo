@@ -14,9 +14,9 @@ type BuildAndRelease struct{}
 // - Generate a CycloneDX Software Bill Of Materials using Syft
 // - Attest the pieces of evidence (binary, container image, and SBOM) using Chainloop
 // https://docs.chainloop.dev/getting-started/attestation-crafting
-func (m *BuildAndRelease) BuildAndPublish(ctx context.Context, proj *Directory, chainloopToken, chainloopSigningKey, chainloopPassphrase *Secret) (status string, err error) {
+func (m *BuildAndRelease) BuildAndPublish(ctx context.Context, proj *Directory, name string, chainloopToken, chainloopSigningKey, chainloopPassphrase *Secret) (status string, err error) {
 	// Initialize the attestation
-	attestation := dag.Chainloop().Init(chainloopToken, dagger.ChainloopInitOpts{Repository: proj})
+	attestation := dag.Chainloop().Init(chainloopToken, name, dagger.ChainloopInitOpts{Repository: proj})
 	// Force the execution of the init method
 	// If Sync is not executed, init will happen at the end of the function
 	_, err = attestation.Sync(ctx)
@@ -31,7 +31,10 @@ func (m *BuildAndRelease) BuildAndPublish(ctx context.Context, proj *Directory, 
 			_, _ = attestation.MarkFailed(ctx, dagger.ChainloopAttestationMarkFailedOpts{Reason: err.Error()})
 		} else {
 			// Push the attestation to Chainloop
-			_, err = attestation.Push(ctx, chainloopSigningKey, chainloopPassphrase)
+			_, err = attestation.Push(ctx, dagger.ChainloopAttestationPushOpts{
+				Key:        chainloopSigningKey,
+				Passphrase: chainloopPassphrase,
+			})
 		}
 	}()
 
@@ -44,9 +47,9 @@ func (m *BuildAndRelease) BuildAndPublish(ctx context.Context, proj *Directory, 
 	// Attest the pieces of evidence
 	attestation = attestation.
 		// Container image
-		AddRawEvidence("image", res.imageRepo).
+		AddRawEvidence(res.imageRepo, dagger.ChainloopAttestationAddRawEvidenceOpts{Name: "image"}).
 		// Binary
-		AddFileEvidence("binary", res.binary)
+		AddFileEvidence(res.binary, dagger.ChainloopAttestationAddFileEvidenceOpts{Name: "binary"})
 	if _, err := attestation.Sync(ctx); err != nil {
 		return "", fmt.Errorf("failed to add evidence to attestation: %w", err)
 	}
