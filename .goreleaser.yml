@@ -36,7 +36,7 @@ dockers:
 blobs:
   # SAS token is passed via AZURE_STORAGE_SAS_TOKEN env var
   - provider: azblob
-    bucket: "public/chainloop-platform-plugin"
+    bucket: "public/chainloop-platform-plugin?storage_account=chainloopplatform"
     directory: "chainloop-platform-plugin"
     extra_files:
       - glob: "./dist/*.tar.gz"
