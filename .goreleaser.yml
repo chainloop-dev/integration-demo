@@ -32,3 +32,9 @@ dockers:
       - server
     image_templates:
       - "ghcr.io/chainloop-dev/integration-demo:{{ .Tag }}"
+
+blobs:
+  # SAS token is passed via AZURE_STORAGE_SAS_TOKEN env var
+  - provider: azblob
+    bucket: "public/chainloop-platform-plugin?storage_account=chainloopplatform"
+    directory: "/chainloop-platform-plugin"
