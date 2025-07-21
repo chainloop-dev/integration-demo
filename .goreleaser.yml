@@ -36,5 +36,6 @@ dockers:
 blobs:
   # SAS token is passed via AZURE_STORAGE_SAS_TOKEN env var
   - provider: azblob
-    bucket: "testchainloop?storage_account=testchainloop"
+    bucket: "testchainloop"
     directory: "chainloop"
+    
