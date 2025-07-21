@@ -37,4 +37,4 @@ blobs:
   # SAS token is passed via AZURE_STORAGE_SAS_TOKEN env var
   - provider: azblob
     bucket: "chainloop"
-
+    directory: "plugindir"
