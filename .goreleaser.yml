@@ -38,7 +38,3 @@ blobs:
   - provider: azblob
     bucket: "public/chainloop-platform-plugin?storage_account=chainloopplatform"
     directory: "chainloop-platform-plugin"
-    extra_files:
-      - glob: "./dist/*.tar.gz"
-      - glob: "./dist/*.zip"
-      - glob: "./dist/checksums.txt"
