@@ -38,6 +38,16 @@ jobs:
         with:
           cosign-release: 'v2.2.0'
 
+      - name: Upload Latest Information
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            version=$(git describe --tags --abbrev=0)
+            echo "Version: $version"
+            echo "$version" > latest.txt
+        env:
+          AZURE_STORAGE_SAS_TOKEN: ${{ secrets.AZURE_STORAGE_SAS_TOKEN }}
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
