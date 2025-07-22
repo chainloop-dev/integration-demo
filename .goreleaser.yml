@@ -2,6 +2,9 @@ project_name: integration-demo
 env:
   - CGO_ENABLED=0
 
+release:
+  disable: true
+
 builds:
   - binary: server
     id: server
