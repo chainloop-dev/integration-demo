@@ -1,0 +1,30 @@
+name: Sync Chainloop Contracts
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".chainloop/contracts/**"
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions: read-all
+
+jobs:
+  chainloop_contract_sync:
+    name: "Chainloop Contract Sync"
+    runs-on: ubuntu-latest
+    env:
+      CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Chainloop
+        run: |
+          curl -sfL https://dl.chainloop.dev/cli/install.sh | bash -s -- --ee
+
+      - name: Sync contract definitions
+        run: |
+          for file in .chainloop/contracts/*.yaml; do
+            chainloop workflow contract apply -f "$file" --org ${{ vars.CHAINLOOP_ORG }}
+          done

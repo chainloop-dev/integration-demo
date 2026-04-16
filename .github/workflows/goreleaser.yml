@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   packages: write
+  id-token: write
 
 jobs:
   goreleaser:
@@ -38,6 +39,49 @@ jobs:
         with:
           cosign-release: 'v2.2.0'
 
+      - name: Install Chainloop
+        run: |
+          curl -sfL https://dl.chainloop.dev/cli/install.sh | bash -s -- --ee
+
+      - name: Initialize Attestation
+        run: chainloop attestation init --workflow goreleaser
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Opengrep
+        env:
+          OPENGREP_VERSION: v1.16.1
+        run: |
+          curl -sL "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_manylinux_x86" \
+            -o /usr/local/bin/opengrep
+          chmod +x /usr/local/bin/opengrep
+        continue-on-error: true
+
+      - name: Run SAST with Opengrep
+        run: |
+          opengrep scan --severity=ERROR \
+            --sarif --sarif-output=/tmp/sast-report.sarif . || true
+        continue-on-error: true
+
+      - name: Install Gitleaks
+        run: |
+          GITLEAKS_VERSION="8.30.0"
+          wget -q "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          mkdir -p /tmp/gitleaks-install
+          tar -xzf "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -C /tmp/gitleaks-install
+          sudo install /tmp/gitleaks-install/gitleaks /usr/local/bin/
+          rm -rf /tmp/gitleaks-install "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+        continue-on-error: true
+
+      - name: Scan for secrets
+        run: |
+          gitleaks dir . \
+            --report-format json \
+            --report-path /tmp/secrets-report.json \
+            || true
+        continue-on-error: true
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
@@ -50,3 +94,78 @@ jobs:
           AZURE_STORAGE_ACCOUNT: testchainloop
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        continue-on-error: true
+        env:
+          SYFT_GOLANG_SEARCH_REMOTE_LICENSES: "true"
+        with:
+          image: ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
+          format: cyclonedx-json
+          upload-artifact: false
+          upload-release-assets: false
+          output-file: /tmp/sbom.cyclonedx.json
+
+      - name: Install Grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh \
+            | sh -s -- -b /usr/local/bin
+        continue-on-error: true
+
+      - name: Run Grype vulnerability scan
+        run: |
+          grype --only-fixed -o sarif --file /tmp/vuln-report.sarif ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
+        continue-on-error: true
+
+      - name: Attest container image
+        run: chainloop attestation add --name container-image --value ghcr.io/chainloop-dev/integration-demo:${{ github.ref_name }}
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+
+      - name: Attest server binary
+        run: chainloop attestation add --name server-binary --value dist/server_linux_amd64_v1/server
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+
+      - name: Attest SBOM
+        run: chainloop attestation add --name sbom --value /tmp/sbom.cyclonedx.json
+        continue-on-error: true
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+
+      - name: Attest vulnerability report
+        run: chainloop attestation add --name vuln-report --value /tmp/vuln-report.sarif
+        continue-on-error: true
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+
+      - name: Attest SAST report
+        run: chainloop attestation add --name sast-report --value /tmp/sast-report.sarif
+        continue-on-error: true
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+
+      - name: Attest secrets report
+        run: chainloop attestation add --name secrets-report --value /tmp/secrets-report.json --kind GITLEAKS_JSON
+        continue-on-error: true
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+
+      - name: Push attestation
+        if: ${{ success() }}
+        run: chainloop attestation push
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+
+      - name: Reset attestation on failure
+        if: ${{ failure() }}
+        run: chainloop attestation reset
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+
+      - name: Reset attestation on cancellation
+        if: ${{ cancelled() }}
+        run: chainloop attestation reset --trigger cancellation
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}

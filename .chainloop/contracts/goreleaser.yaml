@@ -1,0 +1,39 @@
+apiVersion: chainloop.dev/v1
+kind: Contract
+metadata:
+  name: integration-demo-goreleaser
+  description: Chainloop contract for the goreleaser workflow
+spec:
+  materials:
+    - name: container-image
+      type: CONTAINER_IMAGE
+    - name: server-binary
+      type: ARTIFACT
+    - name: sbom
+      type: SBOM_CYCLONEDX_JSON
+    - name: vuln-report
+      type: SARIF
+    - name: sast-report
+      type: SARIF
+    - name: secrets-report
+      type: GITLEAKS_JSON
+  runner:
+    type: GITHUB_ACTION
+  policies:
+    attestation:
+      - ref: source-commit
+      - ref: containers-with-sbom
+    materials:
+      - ref: artifact-signed
+      - ref: artifact-tag-not-latest
+      - ref: secrets-detection
+  policyGroups:
+    - ref: slsa-checks
+    - ref: sbom-quality
+    - ref: vulnerability-management
+      with:
+        severity: "HIGH"
+    - ref: sast
+      with:
+        severity: "MEDIUM"
+    - ref: cwes

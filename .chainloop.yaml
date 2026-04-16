@@ -1,0 +1,23 @@
+# Chainloop project configuration
+# ---------------------------------------------------------------------------
+# This file is automatically read by the Chainloop CLI during 'attestation init'.
+# The 'projectVersion' field sets the project version for compliance tracking.
+#
+# HOW IT WORKS:
+#   When you run 'chainloop attestation init', the CLI looks for this file
+#   starting from the current directory up to the .git root. If found, it
+#   reads 'projectVersion' and uses it — no --version flag needed in CI.
+#
+# WHEN TO UPDATE:
+#   Update 'projectVersion' each time you cut a new release so that
+#   attestations are associated with the correct version in the Chainloop
+#   compliance dashboard.
+#
+# EXCEPTION — tag-triggered workflows:
+#   If your release workflow triggers on 'push: tags', you can override this
+#   file by passing --version ${{ github.ref_name }} to 'attestation init'.
+#   The explicit flag always takes precedence over this file.
+#
+# Docs: https://docs.chainloop.dev/reference/operator/contract
+# ---------------------------------------------------------------------------
+projectVersion: v1.0.0
